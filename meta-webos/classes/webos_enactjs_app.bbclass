@@ -232,7 +232,7 @@ do_create_snapshot() {
 }
 
 V8_SNAPSHOT_EXTRA_ARGS = " --turbo_instruction_scheduling"
-do_install() {
+do_create_snapshot() {
     working=$(pwd)
 
     bbnote "Using Enact project at ${WEBOS_ENACTJS_PROJECT_PATH}"
@@ -265,6 +265,12 @@ do_install() {
             install -d "$appdir"
             mv -f -v ./dist/* "$appdir"
         fi
+    else
+        if [ -z "${WEBOS_ENACTJS_PACK_OVERRIDE}" ] ; then
+            # Normal App Build
+            bbnote "Bundling Enact app to $appdir"
+            ${ENACT_DEV} pack ${WEBOS_ENACTJS_PACK_OPTS} -o "$appdir"
+        fi
     fi
 
     if [ ! -f $appdir/index.html ] ; then
@@ -272,11 +278,17 @@ do_install() {
         exit 1
     fi
 
+    cd ${working}
+}
+addtask do_create_snapshot after do_npm_install_postprocess before do_install
+
+do_install() {
+    # Stage app
+    appdir="${D}${webos_applicationsdir}/${WEBOS_ENACTJS_APP_ID}"
+
     if [ -f $appdir/snapshot_blob.bin ] ; then
         chown root:root "$appdir/snapshot_blob.bin"
     fi
-
-    cd ${working}
 }
 
 FILES:${PN} += "${webos_applicationsdir}"
