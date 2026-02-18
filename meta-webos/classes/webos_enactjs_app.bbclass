@@ -223,6 +223,14 @@ do_npm_install_postprocess() {
 }
 addtask do_npm_install_postprocess after do_npm_install before do_install
 
+do_create_snapshot() {
+    if [ -z "${WEBOS_ENACTJS_PACK_OVERRIDE}" ] ; then
+        # Normal App Build
+        bbnote "Bundling Enact app to $appdir"
+        ${ENACT_DEV} pack ${WEBOS_ENACTJS_PACK_OPTS} -o "$appdir"
+    fi
+}
+
 V8_SNAPSHOT_EXTRA_ARGS = " --turbo_instruction_scheduling"
 do_install() {
     working=$(pwd)
@@ -257,10 +265,6 @@ do_install() {
             install -d "$appdir"
             mv -f -v ./dist/* "$appdir"
         fi
-    else
-        # Normal App Build
-        bbnote "Bundling Enact app to $appdir"
-        ${ENACT_DEV} pack ${WEBOS_ENACTJS_PACK_OPTS} -o "$appdir"
     fi
 
     if [ ! -f $appdir/index.html ] ; then
